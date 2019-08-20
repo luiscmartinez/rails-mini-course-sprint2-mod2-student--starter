@@ -29,12 +29,20 @@ module Api
 
       def ship
         @order = Order.find(params[:id])
+        product_ids = OrderProduct.where(order_id: params[:id]).pluck(:product_id)
 
-        if @order.update(status: "shipped")
-          render json: @order, status: :ok, location: api_v1_order_url(@order)
+        shippable = @order.status != 'shipped' && product_ids.length ? true : false
+
+        if shippable
+          if @order.update(status: "shipped")
+            render json: @order, status: :ok, location: api_v1_order_url(@order)
+          else
+            render json: @order.errors, status: :unprocessable_entity
+          end
         else
-          render json: @order.errors, status: :unprocessable_entity
+          render json: { message: "There was a problem shipping your order." }
         end
+        
       end
     end
   end
