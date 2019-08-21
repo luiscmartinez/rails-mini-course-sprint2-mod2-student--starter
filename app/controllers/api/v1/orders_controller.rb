@@ -32,7 +32,7 @@ module Api
 
         @order.assign_attributes(match_params)
         
-        if @order.ship
+        if OrderProcessor.new(@order).ship
           render json: @order, status: :ok, location: api_v1_order_url(@order)
         else
           render json: { message: "There was a problem shipping your order." }
